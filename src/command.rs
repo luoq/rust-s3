@@ -5,6 +5,7 @@ pub enum Command<'a> {
     DeleteObjectTagging,
     GetObject,
     GetObjectTagging,
+    HeadObject,
     PutObject {
         content: &'a [u8],
         content_type: &'a str,
@@ -27,6 +28,7 @@ impl<'a> Command<'a> {
             Command::GetObject | Command::ListBucket { .. } | Command::GetBucketLocation | Command::GetObjectTagging => Method::GET,
             Command::PutObject { .. } | Command::PutObjectTagging { .. } => Method::PUT,
             Command::DeleteObject | Command::DeleteObjectTagging => Method::DELETE,
+            Command::HeadObject => Method::HEAD,
         }
     }
 }

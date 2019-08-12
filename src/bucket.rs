@@ -1,15 +1,15 @@
 use std::collections::HashMap;
+use std::io::Write;
 use std::mem;
 
 use serde_xml;
 
-use std::io::Write;
-use credentials::Credentials;
 use command::Command;
-use region::Region;
-use request::{Request, Headers, Query};
-use serde_types::{ListBucketResult, BucketLocationResult};
+use credentials::Credentials;
 use error::S3Result;
+use region::Region;
+use request::{Headers, Query, Request};
+use serde_types::{BucketLocationResult, ListBucketResult};
 use serde_types::Tagging;
 
 /// # Example
@@ -62,6 +62,14 @@ impl Bucket {
             extra_headers: HashMap::new(),
             extra_query: HashMap::new(),
         })
+    }
+
+
+    /// Get file meta data from s3
+    pub fn head_object(&self, path: &str) -> S3Result<(Vec<u8>, u32)> {
+        let command = Command::HeadObject;
+        let request = Request::new(self, path, command);
+        request.execute()
     }
 
     /// Gets file from an S3 path.
