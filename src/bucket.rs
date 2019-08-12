@@ -11,6 +11,7 @@ use region::Region;
 use request::{Headers, Query, Request};
 use serde_types::{BucketLocationResult, ListBucketResult};
 use serde_types::Tagging;
+use reqwest::Response;
 
 /// # Example
 /// ```
@@ -66,10 +67,10 @@ impl Bucket {
 
 
     /// Get file meta data from s3
-    pub fn head_object(&self, path: &str) -> S3Result<(Vec<u8>, u32)> {
+    pub fn head_object_raw(&self, path: &str) -> S3Result<Response> {
         let command = Command::HeadObject;
         let request = Request::new(self, path, command);
-        request.execute()
+        request.execute_raw()
     }
 
     /// Gets file from an S3 path.
@@ -433,7 +434,7 @@ impl Bucket {
     ///   * Content-Type
     ///   * Date
     ///   * Content-Length
-    ///   * Authorization
+    ///   * Authorizationh
     ///   * X-Amz-Content-Sha256
     ///   * X-Amz-Date
     pub fn add_header(&mut self, key: &str, value: &str) {

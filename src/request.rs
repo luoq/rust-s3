@@ -22,6 +22,7 @@ use error::{S3Result, ErrorKind};
 
 use EMPTY_PAYLOAD_SHA;
 use LONG_DATE;
+use reqwest::Response;
 
 
 /// Collection of HTTP headers sent to S3 service, in key/value format.
@@ -221,6 +222,10 @@ impl<'a> Request<'a> {
         Ok(headers)
     }
 
+    pub fn execute_raw(&self) -> S3Result<Response> {
+        self._execute_raw()
+    }
+
     pub fn execute(&self) -> S3Result<(Vec<u8>, u32)> {
         let response_tuple = self._execute::<Vec<u8>>(None)?;
         Ok((response_tuple.0.unwrap(), response_tuple.1))
@@ -231,7 +236,7 @@ impl<'a> Request<'a> {
         Ok(response_tuple.1)
     }
 
-    fn _execute<T: Write>(&self, writer: Option<&mut T>) -> S3Result<(Option<Vec<u8>>, u32)> {
+    fn _execute_raw(&self) -> S3Result<Response> {
         // TODO: preserve client across requests
         let client = if cfg!(feature = "no-verify-ssl") {
             reqwest::Client::builder()
@@ -258,8 +263,12 @@ impl<'a> Request<'a> {
             .request(self.command.http_verb(), self.url())
             .headers(headers)
             .body(content);
-        let mut response = request.send()?;
+        let response = request.send()?;
+        Ok(response)
+    }
 
+    fn _execute<T: Write>(&self, writer: Option<&mut T>) -> S3Result<(Option<Vec<u8>>, u32)> {
+        let mut response = self._execute_raw()?;
         let resp_code = u32::from(response.status().as_u16());
 
         let ret;
